@@ -9,10 +9,12 @@
     :root {
       color-scheme: light;
       --page-bg: #ffffff;
-      --panel-border: #e8e8e8;
       --text-color: #111111;
       --muted-text: #666666;
-      --shadow-color: rgba(0, 0, 0, 0.08);
+      --button-bg: #f4f4f4;
+      --button-border: #dddddd;
+      --button-active-bg: #111111;
+      --button-active-text: #ffffff;
     }
 
     * {
@@ -43,10 +45,35 @@
     }
 
     p {
-      margin: 0 0 10px;
+      margin: 0 0 18px;
       text-align: center;
       font-size: 0.95rem;
       color: var(--muted-text);
+    }
+
+    .picker {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .picker button {
+      border: 1px solid var(--button-border);
+      background: var(--button-bg);
+      color: var(--text-color);
+      border-radius: 999px;
+      padding: 10px 16px;
+      font: inherit;
+      cursor: pointer;
+      transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+    }
+
+    .picker button.is-active {
+      background: var(--button-active-bg);
+      color: var(--button-active-text);
+      border-color: var(--button-active-bg);
     }
 
     model-viewer {
@@ -69,8 +96,14 @@
 <body>
   <main>
     <h1>Photobooth 3D</h1>
-    <p>Esplora il modello con zoom, rotazione automatica e controlli touch.</p>
+    <p>Scegli una cabina e ruotala liberamente.</p>
+    <div class="picker" aria-label="Selezione cabine">
+      <button class="is-active" type="button" data-src="./assets/models/test.glb">Classica</button>
+      <button type="button" data-src="./assets/models/test2.glb">Mint Photo</button>
+      <button type="button" data-src="./assets/models/test3.glb">Retro Photo</button>
+    </div>
     <model-viewer
+      id="viewer"
       src="./assets/models/test.glb"
       alt="Modello 3D Photobooth"
       camera-controls
@@ -79,5 +112,20 @@
       exposure="1.2">
     </model-viewer>
   </main>
+  <script>
+    const viewer = document.querySelector('#viewer');
+    const buttons = document.querySelectorAll('.picker button');
+
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const nextSrc = button.dataset.src;
+        if (!nextSrc) return;
+
+        viewer.src = nextSrc;
+        buttons.forEach((item) => item.classList.remove('is-active'));
+        button.classList.add('is-active');
+      });
+    });
+  </script>
 </body>
 </html>
