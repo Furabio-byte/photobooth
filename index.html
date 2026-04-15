@@ -9,12 +9,7 @@
     :root {
       color-scheme: light;
       --page-bg: #ffffff;
-      --text-color: #111111;
-      --muted-text: #666666;
-      --button-bg: #f4f4f4;
-      --button-border: #dddddd;
-      --button-active-bg: #111111;
-      --button-active-text: #ffffff;
+      --muted-text: #6b6b6b;
     }
 
     * {
@@ -24,108 +19,130 @@
     body {
       margin: 0;
       min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 32px;
       background: var(--page-bg);
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-      color: var(--text-color);
+      overflow: hidden;
     }
 
     main {
-      width: min(100%, 1200px);
-    }
-
-    h1 {
-      margin: 0 0 6px;
-      font-size: clamp(1.8rem, 3vw, 2.4rem);
-      font-weight: 600;
-      letter-spacing: 0.02em;
-      text-align: center;
-    }
-
-    p {
-      margin: 0 0 18px;
-      text-align: center;
-      font-size: 0.95rem;
-      color: var(--muted-text);
-    }
-
-    .picker {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-
-    .picker button {
-      border: 1px solid var(--button-border);
-      background: var(--button-bg);
-      color: var(--text-color);
-      border-radius: 999px;
-      padding: 10px 16px;
-      font: inherit;
-      cursor: pointer;
-      transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
-    }
-
-    .picker button.is-active {
-      background: var(--button-active-bg);
-      color: var(--button-active-text);
-      border-color: var(--button-active-bg);
+      position: relative;
+      width: 100vw;
+      height: 100vh;
     }
 
     model-viewer {
       width: 100%;
-      height: min(78vh, 760px);
+      height: 100%;
       background: #ffffff;
+      touch-action: pan-y;
+      user-select: none;
+    }
+
+    .counter,
+    .hint {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--muted-text);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .counter {
+      top: 22px;
+      font-size: 0.82rem;
+    }
+
+    .hint {
+      bottom: 26px;
+      font-size: 0.78rem;
     }
 
     @media (max-width: 720px) {
-      body {
-        padding: 16px;
+      .counter,
+      .hint {
+        font-size: 0.7rem;
       }
 
-      model-viewer {
-        height: 68vh;
+      .counter {
+        top: 18px;
+      }
+
+      .hint {
+        bottom: 20px;
       }
     }
   </style>
 </head>
 <body>
   <main>
-    <h1>Photobooth 3D</h1>
-    <p>Scegli una cabina e ruotala liberamente.</p>
-    <div class="picker" aria-label="Selezione cabine">
-      <button class="is-active" type="button" data-src="./assets/models/test.glb">Classica</button>
-      <button type="button" data-src="./assets/models/test2.glb">Mint Photo</button>
-      <button type="button" data-src="./assets/models/test3.glb">Retro Photo</button>
-    </div>
+    <div class="counter" id="counter">01 / 05</div>
+    <div class="hint">Swipe destra o sinistra</div>
     <model-viewer
       id="viewer"
       src="./assets/models/test.glb"
       alt="Modello 3D Photobooth"
-      camera-controls
-      auto-rotate
       shadow-intensity="1"
-      exposure="1.2">
+      exposure="1.2"
+      disable-zoom>
     </model-viewer>
   </main>
   <script>
     const viewer = document.querySelector('#viewer');
-    const buttons = document.querySelectorAll('.picker button');
+    const counter = document.querySelector('#counter');
+    const models = [
+      './assets/models/test.glb',
+      './assets/models/test2.glb',
+      './assets/models/test3.glb',
+      './assets/models/test4.glb',
+      './assets/models/test5.glb'
+    ];
 
-    buttons.forEach((button) => {
-      button.addEventListener('click', () => {
-        const nextSrc = button.dataset.src;
-        if (!nextSrc) return;
+    let currentIndex = 0;
+    let startX = null;
+    const swipeThreshold = 45;
 
-        viewer.src = nextSrc;
-        buttons.forEach((item) => item.classList.remove('is-active'));
-        button.classList.add('is-active');
-      });
+    function updateViewer() {
+      viewer.src = models[currentIndex];
+      counter.textContent = `${String(currentIndex + 1).padStart(2, '0')} / ${String(models.length).padStart(2, '0')}`;
+    }
+
+    function showNext() {
+      currentIndex = (currentIndex + 1) % models.length;
+      updateViewer();
+    }
+
+    function showPrevious() {
+      currentIndex = (currentIndex - 1 + models.length) % models.length;
+      updateViewer();
+    }
+
+    viewer.addEventListener('pointerdown', (event) => {
+      startX = event.clientX;
     });
+
+    viewer.addEventListener('pointerup', (event) => {
+      if (startX === null) return;
+
+      const deltaX = event.clientX - startX;
+      startX = null;
+
+      if (Math.abs(deltaX) < swipeThreshold) return;
+
+      if (deltaX < 0) {
+        showNext();
+      } else {
+        showPrevious();
+      }
+    });
+
+    viewer.addEventListener('pointercancel', () => {
+      startX = null;
+    });
+
+    updateViewer();
   </script>
 </body>
 </html>
