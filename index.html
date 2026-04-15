@@ -2,43 +2,118 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Photobooth 3D</title>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
     :root {
       color-scheme: light;
       --page-bg: #ffffff;
+      --text-color: #171717;
       --muted-text: #6b6b6b;
+      --line-color: rgba(17, 17, 17, 0.08);
+      --glow-color: rgba(17, 17, 17, 0.06);
     }
 
     * {
       box-sizing: border-box;
     }
 
+    html {
+      height: 100%;
+      background: var(--page-bg);
+      overscroll-behavior: none;
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
+      min-height: 100dvh;
       background: var(--page-bg);
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       overflow: hidden;
+      color: var(--text-color);
+      overscroll-behavior: none;
+      -webkit-text-size-adjust: 100%;
+      -webkit-font-smoothing: antialiased;
+      touch-action: pan-y;
     }
 
     main {
       position: relative;
       width: 100vw;
       height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .stage-glow {
+      position: absolute;
+      inset: auto 50% 10%;
+      width: min(82vw, 820px);
+      height: min(24vw, 220px);
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--glow-color) 0%, rgba(17, 17, 17, 0) 72%);
+      filter: blur(16px);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .top-bar {
+      position: absolute;
+      top: max(22px, env(safe-area-inset-top));
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(calc(100vw - 40px), 420px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .brand,
+    .counter {
+      color: var(--text-color);
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .brand {
+      opacity: 0.92;
+    }
+
+    .counter {
+      opacity: 0.58;
+    }
+
+    .frame-line {
+      position: absolute;
+      left: 50%;
+      bottom: max(28px, calc(env(safe-area-inset-bottom) + 12px));
+      transform: translateX(-50%);
+      width: min(calc(100vw - 48px), 460px);
+      height: 1px;
+      background: linear-gradient(90deg, rgba(17, 17, 17, 0), var(--line-color) 18%, var(--line-color) 82%, rgba(17, 17, 17, 0));
+      z-index: 2;
+      pointer-events: none;
     }
 
     model-viewer {
+      position: relative;
+      z-index: 1;
       width: 100%;
       height: 100%;
       background: #ffffff;
       touch-action: pan-y;
       user-select: none;
+      -webkit-user-select: none;
     }
 
-    .counter,
     .hint {
       position: absolute;
       left: 50%;
@@ -50,42 +125,58 @@
       z-index: 1;
     }
 
-    .counter {
-      top: 22px;
-      font-size: 0.82rem;
-    }
-
     .hint {
-      bottom: 26px;
+      bottom: max(42px, calc(env(safe-area-inset-bottom) + 28px));
       font-size: 0.78rem;
     }
 
     @media (max-width: 720px) {
+      .brand,
       .counter,
       .hint {
         font-size: 0.7rem;
       }
 
-      .counter {
-        top: 18px;
+      .top-bar {
+        top: max(16px, env(safe-area-inset-top));
+        width: calc(100vw - 28px);
       }
 
       .hint {
-        bottom: 20px;
+        bottom: max(34px, calc(env(safe-area-inset-bottom) + 18px));
+      }
+
+      .frame-line {
+        width: calc(100vw - 32px);
+      }
+
+      .stage-glow {
+        width: min(96vw, 560px);
+        height: 170px;
       }
     }
   </style>
 </head>
 <body>
   <main>
-    <div class="counter" id="counter">01 / 05</div>
+    <div class="stage-glow"></div>
+    <div class="top-bar">
+      <div class="brand">Photobooth</div>
+      <div class="counter" id="counter">01 / 05</div>
+    </div>
     <div class="hint">Swipe destra o sinistra</div>
+    <div class="frame-line"></div>
     <model-viewer
       id="viewer"
       src="./assets/models/test.glb"
       alt="Modello 3D Photobooth"
+      camera-orbit="0deg 84deg auto"
+      camera-target="0m 1.15m 0m"
+      field-of-view="22deg"
       shadow-intensity="1"
-      exposure="1.2"
+      shadow-softness="0.8"
+      exposure="1.08"
+      interaction-prompt="none"
       disable-zoom>
     </model-viewer>
   </main>
